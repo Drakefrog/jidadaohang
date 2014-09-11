@@ -26,7 +26,6 @@
     
         android:label="@string/search_label"
         android:hint="@string/search_hint"
-        android:searchMode="queryRewriteFromText"
         android:searchSuggestAuthority="com.example.android.ContactsProvider"
         android:searchSuggestIntentAction="android.intent.action.VIEW"
         android:searchSuggestSelection=" ?"
