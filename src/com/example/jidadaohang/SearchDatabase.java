@@ -76,9 +76,12 @@ public class SearchDatabase extends SQLiteOpenHelper {
 		SQLiteQueryBuilder builder=new SQLiteQueryBuilder();
 		builder.setTables(Contacts.TABLENAME);
 		builder.setProjectionMap(mColumnMap);	
+		//除去重复的地点名称
+		builder.setDistinct(true);
 		SQLiteDatabase db=getReadableDatabase();
-		
-		return builder.query(db, columns, Contacts.NAME+" like "+"'%"+str+"%'", null, null, null,null);	
+		//以地点名称分组去，取出所有不同的地点
+		Cursor cursor = builder.query(db, columns, Contacts.NAME+" like "+"'%"+str+"%'", null, "name", null,null);
+		return cursor;
 	}
 
 }

@@ -53,19 +53,22 @@ public class DataBaseProvider extends ContentProvider {
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
 		// TODO Auto-generated method stub
-	Log.i("debug", "uri--------------"+uri.toString());
-		 switch (uriMatcher.match(uri)) {
-		case QUERY_NAME:
-			   if(selectionArgs==null){
-	            	 return null;
-	             }		
-				return dh.queryContacts(selectionArgs[0]);
-
-		default:
-			break;
+//	Log.i("debug", "uri--------------"+uri.toString());
+//		 switch (uriMatcher.match(uri)) {
+//		case QUERY_NAME:
+//			   if(selectionArgs==null){
+//	            	 return null;
+//	             }		
+//				return dh.queryContacts(selectionArgs[0]);
+//
+//		default:
+//			break;
+//		}
+//          return null;
+		if(selectionArgs == null){
+			return null;
 		}
-          return null;
-
+		return dh.queryContacts(selectionArgs[0]);
 	}
 
 	@Override
