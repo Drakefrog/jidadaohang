@@ -2,6 +2,8 @@ package com.example.jidadaohang;
 
 import java.util.HashMap;
 
+import android.R.integer;
+import android.R.string;
 import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
@@ -83,5 +85,12 @@ public class SearchDatabase extends SQLiteOpenHelper {
 		Cursor cursor = builder.query(db, columns, Contacts.NAME+" like "+"'%"+str+"%'", null, "name", null,null);
 		return cursor;
 	}
-
+	
+	public Cursor queryCursor(String s){
+		SQLiteDatabase db = getWritableDatabase();
+		Cursor cursor = null;
+		int i =0 ;
+		cursor = db.rawQuery("select distinct name from contacts where name like '%" + s + "%' order by _id desc" , null);
+		return cursor;
+	}
 }
