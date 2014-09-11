@@ -513,19 +513,37 @@ public class MainActivity extends Activity {
 			
 		});
 		searchView.setOnQueryTextListener(new OnQueryTextListener() {
-
+			/**
+			 * achieve the action when submitted.
+			 */
 			@Override
 			public boolean onQueryTextSubmit(String query) {
 				// TODO Auto-generated method stub
-			
+				massage = query;
+				mLocationClient.requestLocation();
+				Log.v("latitude", latitude.toString());
+				Log.v("longitude", longitude.toString());
+				if (massage != null) {
+					new Thread() {
+						public void run() {
+							getJsonContent(longitude.toString(),
+									latitude.toString(), massage,
+									"http://1.jludaohang.sinaapp.com/");
+						}
+
+					}.start();
+				}
 				return false;
 			}
-
+			/**
+			 * achieved the action when query changed in search table.
+			 */
 			@Override
 			public boolean onQueryTextChange(String newText) {
 				// TODO Auto-generated method stub
 				String query = searchView.getQuery().toString();
 				query += newText;
+				massage = query;
 				mLocationClient.requestLocation();
 				Log.v("latitude", latitude.toString());
 				Log.v("longitude", longitude.toString());
