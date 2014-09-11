@@ -7,6 +7,6 @@
     <string name="action_search">action_search</string>
     <string name="android_settings">android_settings</string>
     <string name="search_label">Search</string>
-    <string name="search_hint">键入联系人字母</string>
+    <string name="search_hint">键入地点</string>
 
 </resources>

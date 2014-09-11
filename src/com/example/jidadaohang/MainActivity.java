@@ -3,7 +3,23 @@ package com.example.jidadaohang;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.List;
+//-----------------------------
+import android.R.string;
+import android.os.Build;
+import android.os.Bundle;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.SearchManager;
+import android.app.SearchableInfo;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.util.Log;
+import android.view.Menu;
+import android.widget.Button;
+import android.widget.SearchView;
 
+//-----------------------------
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -15,11 +31,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 //百度定位所需相关类
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+
 
 //百度地图所需相关类
 import android.location.Location;
@@ -45,6 +63,7 @@ import android.content.res.Configuration;
 import android.widget.FrameLayout;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
+import android.widget.SearchView.OnSuggestionListener;
 import android.widget.Toast;
 
 import com.baidu.mapapi.BMapManager;
@@ -382,11 +401,13 @@ public class MainActivity extends Activity {
 			sb.append(location.getRadius());
 			sb.append("\nlatitude : ");
 			double lati = location.getLatitude() + 0.0064718;
-			latitude = lati ;
+//			latitude = lati ;
+			latitude = 43.826139;
 			sb.append(lati);
 			sb.append("\nlontitude : ");
 			double longit = location.getLongitude() + 0.0064412;
-			longitude = longit ;
+//			longitude = longit ;
+			longitude = 125.277576;
 			sb.append(longit);
 
 			// sb.append(location.isCellChangeFlag());125.277576,43.826139
@@ -469,19 +490,42 @@ public class MainActivity extends Activity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-		SearchView searchView = (SearchView) menu.findItem(R.id.action_search)
+		final SearchView searchView = (SearchView) menu.findItem(R.id.action_search)
 				.getActionView();
 		SearchableInfo info = searchManager
 				.getSearchableInfo(getComponentName());
 		searchView.setSearchableInfo(info);
 		searchView.setSubmitButtonEnabled(true);
 		searchView.setIconifiedByDefault(true);
+		searchView.setOnSuggestionListener(new OnSuggestionListener(){
+
+			@Override
+			public boolean onSuggestionClick(int arg0) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean onSuggestionSelect(int arg0) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+		});
 		searchView.setOnQueryTextListener(new OnQueryTextListener() {
 
 			@Override
 			public boolean onQueryTextSubmit(String query) {
 				// TODO Auto-generated method stub
-				massage = query;
+			
+				return false;
+			}
+
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				// TODO Auto-generated method stub
+				String query = searchView.getQuery().toString();
+				query += newText;
 				mLocationClient.requestLocation();
 				Log.v("latitude", latitude.toString());
 				Log.v("longitude", longitude.toString());
@@ -495,12 +539,6 @@ public class MainActivity extends Activity {
 
 					}.start();
 				}
-				return false;
-			}
-
-			@Override
-			public boolean onQueryTextChange(String newText) {
-				// TODO Auto-generated method stub
 				return false;
 			}
 		});
