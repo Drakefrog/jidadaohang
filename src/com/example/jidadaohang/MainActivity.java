@@ -217,42 +217,44 @@ public class MainActivity extends Activity {
 				System.out.println("result= " + result);
 				JSONArray arr = new JSONArray(result.toString());
 				StringBuffer sb = new StringBuffer(256);
-				JSONObject obj = (JSONObject) arr.get(0);
-				double re_longitude = obj.getDouble("X");
-				switch ((int) re_longitude) {
-				case 0:
-					Looper.prepare();
-					new AlertDialog.Builder(this)
-							.setMessage("您超出了服务范围！请在吉大校园内使用本应用！")
-							.setPositiveButton("好", null).show();
-					Looper.loop();
-					break;
-				case 1:
-					for (int i = 0; i < arr.length(); i++) {
-						JSONObject jsonObject = (JSONObject) arr.get(i);
-						String re_username = jsonObject.getString("X");
-						sb.append(re_username);
-						String re_password = jsonObject.getString("Y");
-						sb.append(re_password);
-						values.put(Contacts.NAME, obj.getString("Y"));
-						resolver.insert(Contacts.CONTENT_URI, values);
-						values.clear();
-						Log.v("asdsada3", obj.getString("Y"));
+				for (int i = 0; i < arr.length(); i++) {
+					JSONObject jsonObject = (JSONObject) arr.get(i);
+					String re_username = jsonObject.getString("X");
+					sb.append(re_username);
+					String re_password = jsonObject.getString("Y");
+					sb.append(re_password);
+					
+//					JSONObject obj = (JSONObject) arr.get(0);
+					double re_longitude = jsonObject.getDouble("X");
+					switch ((int) re_longitude) {
+					case 0:
+						Looper.prepare();
+						new AlertDialog.Builder(this)
+								.setMessage("您超出了服务范围！请在吉大校园内使用本应用！")
+								.setPositiveButton("好", null).show();
+						Looper.loop();
+						break;
+					case 1:
+							values.put(Contacts.NAME, jsonObject.getString("Y"));
+							resolver.insert(Contacts.CONTENT_URI, values);
+							values.clear();
+							Log.v("asdsada3", jsonObject.getString("Y"));
+							System.out.print(re_username + " 111111111  "  + re_password);
+						break;
+					case 2:
+						Looper.prepare();
+						new AlertDialog.Builder(this)
+								.setMessage("您输入的内容未找到匹配项！请查证后重新输入")
+								.setPositiveButton("好", null).show();
+						Looper.loop();
+						break;
+					default:
+						bMapView.getOverlays().clear();
+				    	bMapView.refresh();
+				    	bMapView.getOverlays().add(myLocationOverlay);
+						jsonArray = arr;
+						addCustomElementsDemo(arr);
 					}
-					break;
-				case 2:
-					Looper.prepare();
-					new AlertDialog.Builder(this)
-							.setMessage("您输入的内容未找到匹配项！请查证后重新输入")
-							.setPositiveButton("好", null).show();
-					Looper.loop();
-					break;
-				default:
-					bMapView.getOverlays().clear();
-			    	bMapView.refresh();
-			    	bMapView.getOverlays().add(myLocationOverlay);
-					jsonArray = arr;
-					addCustomElementsDemo(arr);
 				}
 
 			}
