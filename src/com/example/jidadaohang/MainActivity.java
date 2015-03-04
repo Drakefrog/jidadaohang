@@ -1,9 +1,9 @@
 package com.example.jidadaohang;
 
-import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.List;
 
+//-----------------------------
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -15,54 +15,44 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.SearchManager;
+import android.app.SearchableInfo;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.os.Looper;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
+import android.widget.SearchView.OnSuggestionListener;
+import android.widget.Toast;
+
 //百度定位所需相关类
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
-
-//百度地图所需相关类
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.os.Looper;
-import android.app.ActionBar;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.SearchManager;
-import android.app.SearchableInfo;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.View;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.widget.FrameLayout;
-import android.widget.SearchView;
-import android.widget.SearchView.OnQueryTextListener;
-import android.widget.Toast;
-
 import com.baidu.mapapi.BMapManager;
 import com.baidu.mapapi.MKGeneralListener;
 import com.baidu.mapapi.map.Geometry;
 import com.baidu.mapapi.map.Graphic;
 import com.baidu.mapapi.map.GraphicsOverlay;
 import com.baidu.mapapi.map.LocationData;
-import com.baidu.mapapi.map.MKMapViewListener;
 import com.baidu.mapapi.map.MapController;
-import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationOverlay;
 import com.baidu.mapapi.map.Symbol;
-import com.baidu.mapapi.map.TextOverlay;
-import com.baidu.mapapi.map.Symbol.Color;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
-import com.example.jidadaohang.R;
+//-----------------------------
+//百度地图所需相关类
 
 public class MainActivity extends Activity {
 	ContentResolver resolver;
@@ -82,17 +72,22 @@ public class MainActivity extends Activity {
 	public Double longitude = 125.285099;
 	boolean isFirstLocate = true;
 	private String myKey = "NG55N7Mxcz3hu1KHLlyiY5hT";
-
+	Cursor cursor = null;
+	List<String> list = new ArrayList<String>();
+	SearchDatabase db;
+	String now_location;
+	InputMethodManager imm;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		resolver = getContentResolver();
 		resolver.query(Contacts.CONTENT_URI, new String[] { Contacts.NAME },
 				null, null, null);
+		db = new SearchDatabase(getBaseContext(), Contacts.DBNAME);
 		String str;
 		System.out.println("!!!!!!!!!!!!!!!console");
 		// 启动百度地图
-
+		imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE); 
 		mapManager = new BMapManager(getApplication());
 		mapManager.init(myKey, new MKGeneralListener() {
 			// 检查AK是否正确
@@ -217,42 +212,43 @@ public class MainActivity extends Activity {
 				System.out.println("result= " + result);
 				JSONArray arr = new JSONArray(result.toString());
 				StringBuffer sb = new StringBuffer(256);
-				JSONObject obj = (JSONObject) arr.get(0);
-				double re_longitude = obj.getDouble("X");
-				switch ((int) re_longitude) {
-				case 0:
-					Looper.prepare();
-					new AlertDialog.Builder(this)
-							.setMessage("您超出了服务范围！请在吉大校园内使用本应用！")
-							.setPositiveButton("好", null).show();
-					Looper.loop();
-					break;
-				case 1:
-					for (int i = 0; i < arr.length(); i++) {
-						JSONObject jsonObject = (JSONObject) arr.get(i);
-						String re_username = jsonObject.getString("X");
-						sb.append(re_username);
-						String re_password = jsonObject.getString("Y");
-						sb.append(re_password);
-						values.put(Contacts.NAME, obj.getString("Y"));
-						resolver.insert(Contacts.CONTENT_URI, values);
-						values.clear();
-						Log.v("asdsada3", obj.getString("Y"));
+				for (int i = 0; i < arr.length(); i++) {
+					JSONObject jsonObject = (JSONObject) arr.get(i);
+					String re_username = jsonObject.getString("X");
+					sb.append(re_username);
+					String re_password = jsonObject.getString("Y");
+					sb.append(re_password);
+					
+//					JSONObject obj = (JSONObject) arr.get(0);
+					double re_longitude = jsonObject.getDouble("X");
+					switch ((int) re_longitude) {
+					case 0:
+						Looper.prepare();
+						new AlertDialog.Builder(this)
+								.setMessage("您输入的内容未找到匹配项！请查证后重新输入！")
+								.setPositiveButton("好", null).show();
+						Looper.loop();
+						break;
+					case 1:
+							values.put(Contacts.NAME, jsonObject.getString("Y"));
+							resolver.insert(Contacts.CONTENT_URI, values);
+							values.clear();
+							Log.v("asdsada3", jsonObject.getString("Y"));
+						break;
+					case 2:
+						Looper.prepare();
+						new AlertDialog.Builder(this)
+								.setMessage("您超出了服务范围！请在吉大校园内使用本应用！")
+								.setPositiveButton("好", null).show();
+						Looper.loop();
+						break;
+					default:
+						bMapView.getOverlays().clear();
+				    	bMapView.refresh();
+				    	bMapView.getOverlays().add(myLocationOverlay);
+						jsonArray = arr;
+						addCustomElementsDemo(arr);
 					}
-					break;
-				case 2:
-					Looper.prepare();
-					new AlertDialog.Builder(this)
-							.setMessage("您输入的内容未找到匹配项！请查证后重新输入")
-							.setPositiveButton("好", null).show();
-					Looper.loop();
-					break;
-				default:
-					bMapView.getOverlays().clear();
-			    	bMapView.refresh();
-			    	bMapView.getOverlays().add(myLocationOverlay);
-					jsonArray = arr;
-					addCustomElementsDemo(arr);
 				}
 
 			}
@@ -381,10 +377,12 @@ public class MainActivity extends Activity {
 			sb.append("\nlatitude : ");
 			double lati = location.getLatitude() + 0.0064718;
 			latitude = lati ;
+//			latitude = 43.826139;
 			sb.append(lati);
 			sb.append("\nlontitude : ");
 			double longit = location.getLongitude() + 0.0064412;
 			longitude = longit ;
+//			longitude = 125.277576;
 			sb.append(longit);
 
 			// sb.append(location.isCellChangeFlag());125.277576,43.826139
@@ -464,18 +462,54 @@ public class MainActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
+		
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-		SearchView searchView = (SearchView) menu.findItem(R.id.action_search)
+		final SearchView searchView = (SearchView) menu.findItem(R.id.action_search)
 				.getActionView();
 		SearchableInfo info = searchManager
 				.getSearchableInfo(getComponentName());
 		searchView.setSearchableInfo(info);
 		searchView.setSubmitButtonEnabled(true);
 		searchView.setIconifiedByDefault(true);
-		searchView.setOnQueryTextListener(new OnQueryTextListener() {
+		searchView.setOnSuggestionListener(new OnSuggestionListener(){
 
+			@Override
+			public boolean onSuggestionClick(int arg0) {
+				// TODO Auto-generated method stub
+				
+				now_location = list.get(arg0);
+				searchView.setQuery(now_location, false);
+				//隐藏软件盘
+				imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+				mLocationClient.requestLocation();
+				Log.v("latitude", latitude.toString());
+				Log.v("longitude", longitude.toString());
+				if (now_location != null) {
+					new Thread() {
+						public void run() {
+							getJsonContent(longitude.toString(),
+									latitude.toString(), now_location,
+									"http://1.jludaohang.sinaapp.com/");
+						}
+
+					}.start();
+				}
+				return true;
+			}
+
+			@Override
+			public boolean onSuggestionSelect(int arg0) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+		});
+		searchView.setOnQueryTextListener(new OnQueryTextListener() {
+			/**
+			 * achieve the action when submitted.
+			 */
 			@Override
 			public boolean onQueryTextSubmit(String query) {
 				// TODO Auto-generated method stub
@@ -495,10 +529,35 @@ public class MainActivity extends Activity {
 				}
 				return false;
 			}
-
+			/**
+			 * achieved the action when query changed in search table.
+			 */
 			@Override
 			public boolean onQueryTextChange(String newText) {
 				// TODO Auto-generated method stub
+				//从数据库读取searchable里面的列表，存储在list里面
+				cursor = db.queryContacts(newText);
+				list.clear();
+				while(cursor.moveToNext()){
+					String string = cursor.getString(0);
+					list.add(string);
+				}
+				String query = searchView.getQuery().toString();
+				query += newText;
+				massage = query;
+				mLocationClient.requestLocation();
+				Log.v("latitude", latitude.toString());
+				Log.v("longitude", longitude.toString());
+				if (massage != null) {
+					new Thread() {
+						public void run() {
+							getJsonContent(longitude.toString(),
+									latitude.toString(), massage,
+									"http://1.jludaohang.sinaapp.com/");
+						}
+
+					}.start();
+				}
 				return false;
 			}
 		});

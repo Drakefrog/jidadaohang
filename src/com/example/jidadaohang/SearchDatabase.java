@@ -2,6 +2,8 @@ package com.example.jidadaohang;
 
 import java.util.HashMap;
 
+import android.R.integer;
+import android.R.string;
 import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
@@ -76,9 +78,19 @@ public class SearchDatabase extends SQLiteOpenHelper {
 		SQLiteQueryBuilder builder=new SQLiteQueryBuilder();
 		builder.setTables(Contacts.TABLENAME);
 		builder.setProjectionMap(mColumnMap);	
+		//除去重复的地点名称
+		builder.setDistinct(true);
 		SQLiteDatabase db=getReadableDatabase();
-		
-		return builder.query(db, columns, Contacts.NAME+" like "+"'%"+str+"%'", null, null, null,null);	
+		//以地点名称分组去，取出所有不同的地点
+		Cursor cursor = builder.query(db, columns, Contacts.NAME+" like "+"'%"+str+"%'", null, "name", null,null);
+		return cursor;
 	}
-
+	
+	public Cursor queryCursor(String s){
+		SQLiteDatabase db = getWritableDatabase();
+		Cursor cursor = null;
+		int i =0 ;
+		cursor = db.rawQuery("select distinct name from contacts where name like '%" + s + "%' order by _id desc" , null);
+		return cursor;
+	}
 }
